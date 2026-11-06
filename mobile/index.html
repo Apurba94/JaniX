@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; worker-src 'self' blob:; connect-src 'self' https://janix-editor.vercel.app https://cdn.jsdelivr.net" />
+  <meta name="theme-color" content="#16181d" />
+  <meta name="description" content="JaniX: a fast code editor for Android, iPhone and the web, by Janin A Apurba." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="JaniX" />
+  <title>JaniX</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="xterm.css" />
+  <link rel="stylesheet" href="janix.css" />
+  <link rel="stylesheet" href="mobile.css" />
+</head>
+<body data-theme="janix-dark">
+  <div id="app">
+    <nav id="activitybar" aria-label="Views">
+      <button class="activity active" data-view="explorer" title="Explorer (Ctrl+Shift+E)" aria-label="Explorer">
+        <svg viewBox="0 0 24 24"><path d="M4 4h7l2 2h7v13H4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="activity" data-view="search" title="Search (Ctrl+Shift+F)" aria-label="Search">
+        <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m15 15 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <button class="activity" id="terminal-toggle" title="Terminal (Ctrl+`)" aria-label="Terminal">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m7 10 3 2-3 2M12 15h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <div class="spacer"></div>
+      <button class="activity" id="about-button" title="About JaniX" aria-label="About JaniX">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5M12 8v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </nav>
+
+    <aside id="sidebar">
+      <div class="drawer-tabs">
+        <button class="drawer-tab active" data-view="explorer">Explorer</button>
+        <button class="drawer-tab" data-view="search">Search</button>
+      </div>
+      <section id="explorer-view" class="view">
+        <header class="view-header">
+          <span class="view-title">EXPLORER</span>
+          <span class="view-actions">
+            <button data-action="newFile" title="New File" aria-label="New File">＋</button>
+            <button data-action="newFolder" title="New Folder" aria-label="New Folder">▤</button>
+            <button data-action="refresh" title="Refresh" aria-label="Refresh">⟳</button>
+            <button data-action="collapse" title="Collapse All" aria-label="Collapse All">⊟</button>
+          </span>
+        </header>
+        <div id="folder-name" class="folder-name"></div>
+        <div id="tree" class="tree" tabindex="0" role="tree"></div>
+        <div id="no-folder" class="empty-state">
+          <p>You have not opened a project yet.</p>
+          <button class="primary" id="open-folder-button">Open Project</button>
+        </div>
+      </section>
+
+      <section id="search-view" class="view" hidden>
+        <header class="view-header"><span class="view-title">SEARCH</span></header>
+        <div class="search-box">
+          <input id="search-input" type="search" placeholder="Search in files" spellcheck="false" autocapitalize="off" enterkeyhint="search" />
+          <button id="search-case" class="toggle" title="Match Case">Aa</button>
+        </div>
+        <div id="search-summary" class="search-summary"></div>
+        <div id="search-results" class="search-results"></div>
+      </section>
+    </aside>
+    <div id="sash" title="Drag to resize"></div>
+    <div id="drawer-backdrop"></div>
+
+    <main id="main">
+      <div id="topbar">
+        <button id="drawer-button" class="top-button" aria-label="Explorer">☰</button>
+        <div id="tabs" role="tablist"></div>
+        <button id="save-button" class="top-button" aria-label="Save" title="Save (Ctrl+S)">
+          <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z M8 4v5h7V4 M8 20v-6h8v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="menu-button" class="top-button" aria-label="Menu" title="Menu">⋮</button>
+      </div>
+      <div id="editor-area">
+        <div id="pane-left" class="pane">
+        <div id="editor"></div>
+        <div id="welcome">
+          <div class="welcome-inner">
+            <img src="icons/icon-192.png" alt="" class="welcome-logo" />
+            <h1>JaniX</h1>
+            <p class="tagline">Write code. Ship faster.</p>
+            <div class="welcome-columns">
+              <div>
+                <h2>Start</h2>
+                <button class="link" data-command="newFile">New File</button>
+                <button class="link" data-command="openFolderDialog">Open Project…</button>
+                <button class="link" data-command="gitClone">Clone Git Repository…</button>
+                <button class="link" data-command="importZip">Import ZIP…</button>
+              </div>
+              <div>
+                <h2>Recent</h2>
+                <div id="welcome-recent"></div>
+              </div>
+            </div>
+            <div class="shortcuts">
+              <span><kbd>Ctrl</kbd>+<kbd>P</kbd> Go to file</span>
+              <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> Command palette</span>
+              <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> Find in files</span>
+              <span><kbd>Ctrl</kbd>+<kbd>`</kbd> Terminal</span>
+              <span><kbd>Ctrl</kbd>+<kbd>\</kbd> Split editor</span>
+              <span><kbd>Ctrl</kbd>+<kbd>,</kbd> Settings</span>
+            </div>
+          </div>
+        </div>
+        </div>
+        <div id="pane-right" class="pane" hidden>
+          <header class="pane-header"><span id="pane-right-title"></span><button id="pane-right-close" title="Close">✕</button></header>
+          <div id="editor2"></div>
+          <article id="preview" class="markdown-body" hidden></article>
+        </div>
+      </div>
+      <div id="panel-sash" hidden title="Drag to resize"></div>
+      <section id="panel" hidden>
+        <header class="panel-header">
+          <span class="view-title">TERMINAL</span>
+          <span id="terminal-tabs" class="terminal-tabs"></span>
+          <span class="view-actions">
+            <button id="terminal-new" title="New Terminal" aria-label="New Terminal">＋</button>
+            <button id="terminal-kill" title="Kill Terminal" aria-label="Kill Terminal">🗑</button>
+            <button id="terminal-close" title="Hide Panel" aria-label="Hide Panel">✕</button>
+          </span>
+        </header>
+        <div id="terminal-host"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="keybar" hidden aria-label="Coding keys"></div>
+
+  <footer id="statusbar">
+    <span id="status-left"><span id="status-folder"></span><span id="status-branch" title="Git branch"></span></span>
+    <span id="status-right">
+      <button id="status-position" title="Go to Line">Ln 1, Col 1</button>
+      <button id="status-indent" title="Indentation">Spaces: 4</button>
+      <span id="status-encoding">UTF-8</span>
+      <button id="status-eol" title="Line endings">LF</button>
+      <button id="status-language" title="Select Language Mode">Plain Text</button>
+    </span>
+  </footer>
+
+  <div id="quickopen" class="overlay" hidden>
+    <div class="quickopen-box" role="dialog" aria-label="Quick open">
+      <input id="quickopen-input" type="text" spellcheck="false" autocapitalize="off" autocomplete="off" />
+      <div id="quickopen-list" role="listbox"></div>
+    </div>
+  </div>
+
+  <div id="sheet" class="overlay" hidden>
+    <div class="sheet-box" role="menu" aria-label="Menu"><div id="sheet-list"></div></div>
+  </div>
+
+  <div id="dialog" class="overlay" hidden>
+    <div class="dialog-box" role="dialog" aria-modal="true">
+      <p id="dialog-message" class="dialog-message"></p>
+      <p id="dialog-detail" class="dialog-detail"></p>
+      <input id="dialog-input" type="text" spellcheck="false" autocapitalize="off" autocomplete="off" hidden />
+      <div id="dialog-buttons" class="dialog-buttons"></div>
+    </div>
+  </div>
+
+  <div id="projects" class="overlay" hidden>
+    <div class="settings-box" role="dialog" aria-label="Projects">
+      <header class="settings-header"><h2>Projects</h2><button id="projects-close" title="Close (Esc)">✕</button></header>
+      <div id="projects-list" class="projects-list"></div>
+      <div class="projects-actions">
+        <button class="primary" data-command="newProject">New Project</button>
+        <button class="secondary" data-command="gitClone">Clone Repository</button>
+        <button class="secondary" data-command="importZip">Import ZIP</button>
+      </div>
+      <p class="settings-note">Projects are stored on this device, inside JaniX. Use Export Project as ZIP (in the ⋮ menu) to back them up or share them.</p>
+    </div>
+  </div>
+
+  <div id="settings" class="overlay" hidden>
+    <div class="settings-box" role="dialog" aria-label="Settings">
+      <header class="settings-header"><h2>Settings</h2><button id="settings-close" title="Close (Esc)">✕</button></header>
+      <div class="settings-grid">
+        <label>Theme<select data-setting="theme"><option value="janix-dark">JaniX Dark</option><option value="janix-light">JaniX Light</option><option value="hc-black">High Contrast</option></select></label>
+        <label>Font size<input data-setting="fontSize" type="number" min="8" max="40" inputmode="numeric" /></label>
+        <label class="wide">Font family<input data-setting="fontFamily" type="text" spellcheck="false" autocapitalize="off" /></label>
+        <label>Tab size<select data-setting="tabSize"><option value="2">2</option><option value="4">4</option><option value="8">8</option></select></label>
+        <label>Word wrap<select data-setting="wordWrap"><option value="off">Off</option><option value="on">On</option></select></label>
+        <label>Line numbers<select data-setting="lineNumbers"><option value="on">On</option><option value="off">Off</option></select></label>
+        <label>Render whitespace<select data-setting="renderWhitespace"><option value="none">None</option><option value="selection">Trailing</option><option value="all">All</option></select></label>
+        <label>Cursor style<select data-setting="cursorStyle"><option value="line">Line</option><option value="block">Block</option><option value="underline">Underline</option></select></label>
+        <label>Auto save<select data-setting="autoSave"><option value="off">Off</option><option value="afterDelay">After 1 second</option><option value="onFocusChange">When JaniX loses focus</option></select></label>
+        <label class="check"><input data-setting="keybar" type="checkbox" /> Show coding keys above the keyboard</label>
+        <label>Terminal font size<input data-setting="terminalFontSize" type="number" min="8" max="32" inputmode="numeric" /></label>
+        <h3 class="wide">Git</h3>
+        <label>Your name (for commits)<input data-setting="gitName" type="text" autocomplete="name" /></label>
+        <label>Your email (for commits)<input data-setting="gitEmail" type="email" autocomplete="email" autocapitalize="off" /></label>
+        <label class="wide">GitHub personal access token (only needed to push or clone private repositories)<input data-setting="gitToken" type="password" autocomplete="off" spellcheck="false" autocapitalize="off" /></label>
+      </div>
+      <p class="settings-note">Changes apply immediately. Settings, projects and the token stay on this device.</p>
+    </div>
+  </div>
+
+  <div id="about" class="overlay" hidden>
+    <div class="about-box" role="dialog" aria-label="About JaniX">
+      <img src="icons/icon-192.png" alt="" class="about-logo" />
+      <h2>JaniX</h2>
+      <p id="about-version"></p>
+      <p>A fast code editor for your phone, built on CodeMirror. The same JaniX as on Windows.</p>
+      <p>Created by <strong>Janin A Apurba</strong>.</p>
+      <p class="about-links">
+        <a href="https://www.youtube.com/@studywithjanin" target="_blank" rel="noopener">Study with Janin</a> ·
+        <a href="https://www.youtube.com/@pomodorostudywithjanin3326" target="_blank" rel="noopener">Pomodoro Study with Janin</a>
+      </p>
+      <p class="about-links"><a href="https://github.com/Apurba94/JaniX" target="_blank" rel="noopener">JaniX on GitHub</a></p>
+      <button class="primary" id="about-close">Close</button>
+    </div>
+  </div>
+
+  <input id="file-input" type="file" multiple hidden />
+  <input id="zip-input" type="file" accept=".zip,application/zip" hidden />
+  <div id="contextmenu" class="contextmenu" hidden role="menu"></div>
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

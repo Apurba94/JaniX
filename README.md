@@ -1,6 +1,6 @@
 # JaniX
 
-A fast code editor for Windows, built on Monaco, the editor component that powers VS Code.
+A fast code editor for Windows, Android and iPhone. On Windows it is built on Monaco, the editor component that powers VS Code.
 
 ## Download
 
@@ -10,6 +10,13 @@ Get the latest version from the [Releases page](https://github.com/Apurba94/Jani
 - **JaniX.exe** (portable). A single file that runs without installing.
 
 The `.exe` files are not code-signed, so Windows SmartScreen may warn on first launch. Choose "More info", then "Run anyway".
+
+### JaniX for Android and iPhone
+
+- **Web app** (iPhone, Android and any browser): open **https://janix-editor.vercel.app**, then *Add to Home Screen*. It works offline.
+- **Android**: install **JaniX-1.1.0.apk** from the [Releases page](https://github.com/Apurba94/JaniX/releases/latest).
+
+The mobile app has the same editor, tabs, explorer, search, split editor, Markdown preview, Git, settings and themes as the Windows version. It adds coding keys above the on-screen keyboard. See [mobile/README.md](mobile/README.md).
 
 ## Features
 

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">JaniX</string>
+    <string name="title_activity_main">JaniX</string>
+    <string name="package_name">com.janinapurba.janix</string>
+    <string name="custom_url_scheme">com.janinapurba.janix</string>
+</resources>

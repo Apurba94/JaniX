@@ -1,0 +1,8 @@
+{
+  "appId": "com.janinapurba.janix",
+  "appName": "JaniX",
+  "webDir": "www",
+  "android": { "backgroundColor": "#16181d" },
+  "ios": { "backgroundColor": "#16181d", "contentInset": "never" },
+  "plugins": { "StatusBar": { "backgroundColor": "#16181d", "style": "DARK", "overlaysWebView": false } }
+}
